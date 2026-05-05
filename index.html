@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>Future Pack | Subscription System</title>
+  <link rel="stylesheet" href="assets/style.css" />
+</head>
+<body>
+  <section id="loginPage" class="login-page">
+    <div class="login-card">
+      <img src="logo.png" class="login-logo" alt="Logo" onerror="this.style.display='none'">
+      <h1>نظام إدارة الاشتراكات</h1>
+      <p>لوحة تحكم احترافية لإدارة الاشتراكات، البطاقة، الدفعات، والتنبيهات</p>
+      <label>اسم المستخدم</label>
+      <input id="username" type="text" value="admin" />
+      <label>كلمة المرور</label>
+      <input id="password" type="password" value="admin123" />
+      <button onclick="login()">دخول</button>
+      <small>admin / admin123</small>
+    </div>
+  </section>
+
+  <main id="app" class="app hidden">
+    <aside class="sidebar">
+      <div class="brand">
+        <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+        <div><strong>Future Pack</strong><span>Subscription Control</span></div>
+      </div>
+      <button class="nav active" data-page="dashboard" onclick="showPage('dashboard')">لوحة التحكم</button>
+      <button class="nav" data-page="subscriptions" onclick="showPage('subscriptions')">الاشتراكات</button>
+      <button class="nav" data-page="wallet" onclick="showPage('wallet')">البطاقة والرصيد</button>
+      <button class="nav" data-page="payments" onclick="showPage('payments')">الدفعات</button>
+      <button class="nav" data-page="alerts" onclick="showPage('alerts')">التنبيهات</button>
+      <button class="nav" data-page="reports" onclick="showPage('reports')">التقارير</button>
+      <div class="sidebar-footer"><button class="danger-outline" onclick="logout()">تسجيل خروج</button></div>
+    </aside>
+
+    <section class="content">
+      <header class="topbar">
+        <div><h2 id="pageTitle">لوحة التحكم</h2><p>تحكم كامل وتفاعلي بالمصاريف والاشتراكات</p></div>
+        <div class="top-actions">
+          <button onclick="exportData()">تصدير Backup</button>
+          <label class="import-btn">استيراد Backup<input type="file" accept=".json" onchange="importData(event)"></label>
+        </div>
+      </header>
+
+      <section id="dashboard" class="page">
+        <div class="cards">
+          <div class="card"><span>رصيد البطاقة</span><strong id="walletBalanceCard">0 JOD</strong></div>
+          <div class="card"><span>شهري JOD</span><strong id="monthlyJodCard">0</strong></div>
+          <div class="card"><span>شهري USD</span><strong id="monthlyUsdCard">0</strong></div>
+          <div class="card"><span>دفعات قادمة 30 يوم</span><strong id="upcomingCard">0</strong></div>
+        </div>
+        <div class="grid-2 dashboard-wide">
+          <div class="panel hero-panel">
+            <div class="section-head"><h3>🚨 أقرب الدفعات</h3><button class="ghost" onclick="showPage('alerts')">عرض الكل</button></div>
+            <div id="dashboardAlerts"></div>
+          </div>
+          <div class="panel"><h3>📊 ملخص حسب القسم</h3><div id="departmentSummary"></div></div>
+        </div>
+        <div class="grid-3">
+          <div class="panel"><h3>💳 حالة البطاقة</h3><div id="walletHealth"></div></div>
+          <div class="panel"><h3>🏷️ أعلى التصنيفات تكلفة</h3><div id="categorySummary"></div></div>
+          <div class="panel"><h3>💡 اقتراحات ذكية</h3><div id="smartInsights"></div></div>
+        </div>
+      </section>
+
+      <section id="subscriptions" class="page hidden">
+        <div class="panel">
+          <div class="section-head"><h3>الاشتراكات</h3><button onclick="openSubscriptionModal()">+ إضافة اشتراك</button></div>
+          <div class="filters">
+            <input id="searchInput" placeholder="بحث..." oninput="renderSubscriptions()">
+            <select id="deptFilter" onchange="renderSubscriptions()"></select>
+            <select id="cycleFilter" onchange="renderSubscriptions()"><option value="">كل الدورات</option><option value="شهري">شهري</option><option value="سنوي">سنوي</option></select>
+          </div>
+          <div class="table-wrap"><table><thead><tr><th>الاشتراك</th><th>القسم</th><th>التصنيف</th><th>التكلفة</th><th>الدورة</th><th>التجديد</th><th>إجراءات</th></tr></thead><tbody id="subscriptionsTable"></tbody></table></div>
+        </div>
+      </section>
+
+      <section id="wallet" class="page hidden">
+        <div class="cards">
+          <div class="card"><span>الرصيد الحالي</span><strong id="walletBalancePage">0 JOD</strong></div>
+          <div class="card"><span>إجمالي الإيداعات JOD</span><strong id="totalDeposits">0 JOD</strong></div>
+          <div class="card"><span>إجمالي المدفوع JOD</span><strong id="totalPaid">0 JOD</strong></div>
+          <div class="card"><span>عدد الحركات</span><strong id="txCount">0</strong></div>
+        </div>
+        <div class="grid-2">
+          <div class="panel"><h3>إضافة رصيد للبطاقة</h3><div class="form-grid"><input id="depositAmount" type="number" step="0.01" placeholder="المبلغ"><select id="depositCurrency"><option value="JOD">JOD</option><option value="USD">USD</option></select><input id="depositNote" placeholder="ملاحظة"><button onclick="addDeposit()">إضافة رصيد</button></div></div>
+          <div class="panel"><h3>سجل البطاقة</h3><div id="walletTransactions" class="transactions"></div></div>
+        </div>
+      </section>
+
+      <section id="payments" class="page hidden">
+        <div class="panel">
+          <div class="section-head"><h3>تسجيل دفعة اشتراك</h3></div>
+          <div class="form-grid pay-grid">
+            <select id="paymentSubscription"></select><input id="paymentAmount" type="number" step="0.01" placeholder="المبلغ"><select id="paymentCurrency"><option value="JOD">JOD</option><option value="USD">USD</option></select><input id="paymentDate" type="date"><input id="paymentNote" placeholder="ملاحظة"><button onclick="recordPayment()">تسجيل وخصم</button>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="section-head"><h3>إضافة دفعة جديدة</h3><span class="hint">دفعة حرة لا تحتاج تكون مرتبطة باشتراك</span></div>
+          <div class="form-grid custom-pay-grid">
+            <input id="customPaymentName" placeholder="اسم الدفعة"><input id="customPaymentAmount" type="number" step="0.01" placeholder="القيمة"><select id="customPaymentCurrency"><option value="JOD">JOD</option><option value="USD">USD</option></select><input id="customPaymentDate" type="date"><input id="customPaymentCategory" placeholder="التصنيف"><input id="customPaymentNote" placeholder="ملاحظات"><button onclick="recordCustomPayment()">خصم من البطاقة</button>
+          </div>
+        </div>
+        <div class="panel"><h3>سجل الدفعات</h3><div class="table-wrap"><table><thead><tr><th>الدفعة</th><th>المبلغ</th><th>التاريخ</th><th>ملاحظة</th></tr></thead><tbody id="paymentsTable"></tbody></table></div></div>
+      </section>
+
+      <section id="alerts" class="page hidden"><div class="panel"><h3>تنبيهات الدفعات القادمة</h3><div id="alertsList"></div></div></section>
+
+      <section id="reports" class="page hidden reports-page">
+        <div class="panel report-hero"><div><h3>📈 مركز التقارير والتحليل</h3><p>صفحة واسعة توضّح المصاريف حسب العملة، الدورة، القسم، والتصنيف.</p></div><div class="report-actions"><button onclick="exportData()">تصدير البيانات</button><button class="ghost" onclick="window.print()">طباعة التقرير</button></div></div>
+        <div class="report-grid-wide">
+          <div class="panel"><h3>التكلفة حسب العملة والدورة</h3><div id="cycleReport"></div></div>
+          <div class="panel"><h3>أعلى الاشتراكات تكلفة</h3><div id="topCosts"></div></div>
+          <div class="panel"><h3>التكلفة حسب القسم</h3><div id="departmentReport"></div></div>
+          <div class="panel"><h3>التكلفة حسب التصنيف</h3><div id="categoryReport"></div></div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <nav class="mobile-bottom-nav">
+    <button onclick="showPage('dashboard')">الرئيسية</button><button onclick="showPage('subscriptions')">الاشتراكات</button><button onclick="showPage('wallet')">البطاقة</button><button onclick="showPage('payments')">الدفعات</button><button onclick="showPage('alerts')">التنبيهات</button>
+  </nav>
+
+  <div id="subscriptionModal" class="modal hidden">
+    <div class="modal-card">
+      <div class="section-head"><h3>إضافة / تعديل اشتراك</h3><button class="ghost" onclick="closeSubscriptionModal()">×</button></div>
+      <input id="subId" type="hidden">
+      <div class="form-grid">
+        <input id="subName" placeholder="اسم الاشتراك"><input id="subDepartment" placeholder="القسم"><input id="subCategory" placeholder="التصنيف"><input id="subQty" type="number" placeholder="العدد" value="1"><input id="subCost" type="number" step="0.01" placeholder="التكلفة"><select id="subCurrency"><option>JOD</option><option>USD</option></select><select id="subCycle"><option>شهري</option><option>سنوي</option></select><input id="subRenewal" type="date"><textarea id="subNotes" placeholder="ملاحظات"></textarea>
+      </div>
+      <div class="modal-actions"><button onclick="saveSubscription()">حفظ</button><button class="danger-outline" onclick="closeSubscriptionModal()">إلغاء</button></div>
+    </div>
+  </div>
+
+  <script src="assets/app.js"></script>
+</body>
+</html>
